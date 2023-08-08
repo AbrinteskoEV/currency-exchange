@@ -6,7 +6,9 @@
     "type": "project",
     "require": {
         "php": "^8.0",
-        "laravel/lumen-framework": "^9.0"
+        "laravel/lumen-framework": "^9.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "php-amqplib/php-amqplib": "^3.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -16,6 +18,8 @@
     "autoload": {
         "psr-4": {
             "Application\\": "Application/",
+            "Domain\\": "Domain/",
+            "Infrastructure\\": "Infrastructure/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

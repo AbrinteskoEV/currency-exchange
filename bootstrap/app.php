@@ -107,7 +107,7 @@ $app->configure('app');
 */
 
 $app->router->group([
-    'namespace' => 'App\Http\Controllers',
+    'namespace' => '',
 ], function ($router) {
     require __DIR__.'/../Application/Http/web.php';
 });
