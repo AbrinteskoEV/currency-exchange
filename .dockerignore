@@ -1,0 +1,6 @@
+.git
+Dockerfile
+*.j2
+deploy.yml
+k8s.yml
+
