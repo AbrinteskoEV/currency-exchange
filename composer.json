@@ -6,9 +6,10 @@
     "type": "project",
     "require": {
         "php": "^8.0",
-        "laravel/lumen-framework": "^9.0",
         "guzzlehttp/guzzle": "^7.0",
-        "php-amqplib/php-amqplib": "^3.2"
+        "laravel/lumen-framework": "^9.0",
+        "php-amqplib/php-amqplib": "^3.2",
+        "tarantool/client": "^0.10.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
