@@ -11,6 +11,7 @@ class BinanceExchangePairsInfoGettingService
 {
     private const API_METHOD = 'GET';
     private const ENDPOINT = '/v3/ticker/price';
+    private const API_WEIGHT = 2;
 
     private BaseHttpClient $binanceClient;
 

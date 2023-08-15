@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Infrastructure\Client;
+namespace Infrastructure\Service\Cache;
 
-class TarantoolCachingClient
+use Infrastructure\Client\BaseHttpClient;
+use Infrastructure\Client\TarantoolHttpClientFactory;
+
+class TarantoolCacheRepository
 {
+    private const COMPLEX_KEY_DELIMITER = ':';
+
     private BaseHttpClient $tarantoolHttpClient;
 
     /**
@@ -20,7 +25,7 @@ class TarantoolCachingClient
     private const CACHE_GETTING_API_METHOD = 'GET';
     private const CACHE_STORING_ENDPOINT = '/cache';
     private const CACHE_STORING_API_METHOD = 'POST';
-    private const CACHE_FLUSHING_ENDPOINT = '/cache/flush';
+    private const CACHE_FLUSHING_ENDPOINT = '/cache/delete';
     private const CACHE_FLUSHING_API_METHOD = 'POST';
 
     /**
@@ -31,7 +36,7 @@ class TarantoolCachingClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function getCache(string $cacheKey): mixed
+    public function retrieve(string $cacheKey): mixed
     {
         $response = $this->tarantoolHttpClient->sendRequest(
             self::CACHE_GETTING_API_METHOD,
@@ -51,7 +56,7 @@ class TarantoolCachingClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function storeCache(string $cacheKey, mixed $data): array
+    public function store(string $cacheKey, mixed $data): array
     {
         $response = $this->tarantoolHttpClient->sendRequest(
             self::CACHE_STORING_API_METHOD,
@@ -70,7 +75,7 @@ class TarantoolCachingClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function flushCache(string $cacheKey): bool
+    public function remove(string $cacheKey): bool
     {
         $response = $this->tarantoolHttpClient->sendRequest(
             self::CACHE_FLUSHING_API_METHOD,
@@ -79,5 +84,20 @@ class TarantoolCachingClient
         );
 
         return $response['success'];
+    }
+
+    /**
+     * @param array<string> $keyPartList
+     * @param string|null $complexKeyPart
+     *
+     * @return string
+     */
+    public function formatComplexKey(array $keyPartList, ?string $complexKeyPart = null): string
+    {
+        foreach ($keyPartList as $part) {
+            $complexKeyPart .= self::COMPLEX_KEY_DELIMITER . $part;
+        }
+
+        return ltrim($complexKeyPart, self::COMPLEX_KEY_DELIMITER);
     }
 }
