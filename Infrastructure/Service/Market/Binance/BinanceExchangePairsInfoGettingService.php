@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Infrastructure\Service\Market\Binance;
 
-use Infrastructure\Client\BinanceClient;
+use Infrastructure\Client\BaseHttpClient;
+use Infrastructure\Client\BinanceHttpClientFactory;
 
 class BinanceExchangePairsInfoGettingService
 {
     private const API_METHOD = 'GET';
     private const ENDPOINT = '/v3/ticker/price';
 
-    private BinanceClient $client;
+    private BaseHttpClient $binanceClient;
 
     /**
-     * @param BinanceClient $client
+     * @param BinanceHttpClientFactory $binanceClientFactory
      */
-    public function __construct(BinanceClient $client)
+    public function __construct(BinanceHttpClientFactory $binanceClientFactory)
     {
-        $this->client = $client;
+        $this->binanceClient = $binanceClientFactory->create();
     }
 
     /**
@@ -29,6 +30,6 @@ class BinanceExchangePairsInfoGettingService
      */
     public function getExchangePairsInfo(): array
     {
-        return $this->client->sendRequest(self::API_METHOD, self::ENDPOINT);
+        return $this->binanceClient->sendRequest(self::API_METHOD, self::ENDPOINT);
     }
 }

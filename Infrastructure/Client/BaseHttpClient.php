@@ -4,31 +4,28 @@ declare(strict_types=1);
 
 namespace Infrastructure\Client;
 
-use Domain\Dictionary\Config\FileConfigNameDictionary;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Utils;
-use Infrastructure\Service\Config\FileConfigGettingService;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 
-class BinanceClient
+class BaseHttpClient
 {
     private Client $httpClient;
     private string $apiUrl;
 
     /**
      * @param Client $httpClient
-     * @param FileConfigGettingService $fileConfigGettingService
+     * @param string $apiUrl
      */
     public function __construct(
         Client $httpClient,
-        FileConfigGettingService $fileConfigGettingService
+        string $apiUrl
     ) {
         $this->httpClient = $httpClient;
-        $binanceApiConfig = $fileConfigGettingService->getConfig(FileConfigNameDictionary::BINANCE_API_CONFIG);
-        $this->apiUrl = $binanceApiConfig['apiUrl'];
+        $this->apiUrl = $apiUrl;
     }
 
     /**
@@ -90,6 +87,7 @@ class BinanceClient
      */
     private function createRequestStreamFromBody(array $requestBody): StreamInterface
     {
-        return Utils::streamFor(json_encode($requestBody, JSON_THROW_ON_ERROR));
+        $jsonBody = json_encode($requestBody, JSON_THROW_ON_ERROR);
+        return Utils::streamFor($jsonBody);
     }
 }
