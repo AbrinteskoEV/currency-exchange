@@ -1,5 +1,7 @@
 <?php
 
+use Application\Http\Request\BaseRequest;
+
 require_once __DIR__.'/../vendor/autoload.php';
 
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
@@ -105,6 +107,14 @@ $app->configure('app');
 | can respond to, as well as the controllers that may handle them.
 |
 */
+
+$app->afterResolving(BaseRequest::class, function (BaseRequest $request, Laravel\Lumen\Application $app) {
+    $request->performValidation($app);
+});
+
+$app->resolving(BaseRequest::class, function (BaseRequest $request, Laravel\Lumen\Application $app) {
+    BaseRequest::createFrom($app['request'], $request);
+});
 
 $app->router->group([
     'namespace' => '',

@@ -44,7 +44,7 @@ class TarantoolCacheRepository
             ['cache_key' => $cacheKey]
         );
 
-        return $response['data'];
+        return $response['data'] ?? null;
     }
 
     /**

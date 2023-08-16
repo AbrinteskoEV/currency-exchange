@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Infrastructure\Service\Market\Binance\DTO;
 
-class BinanceMarketInfoDTO
+class BinanceCommonDataDTO
 {
     private int $minuteApiWeightLimit;
     private array $symbolInfoList;

@@ -9,7 +9,8 @@
         "guzzlehttp/guzzle": "^7.0",
         "laravel/lumen-framework": "^9.0",
         "php-amqplib/php-amqplib": "^3.2",
-        "tarantool/client": "^0.10.0"
+        "tarantool/client": "^0.10.0",
+        "ext-http": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

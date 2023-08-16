@@ -7,9 +7,9 @@ namespace Infrastructure\Service\Market\Binance;
 use http\Exception\RuntimeException;
 use Infrastructure\Client\BaseHttpClient;
 use Infrastructure\Client\BinanceHttpClientFactory;
-use Infrastructure\Service\Market\Binance\DTO\BinanceMarketInfoDTO;
+use Infrastructure\Service\Market\Binance\DTO\BinanceCommonDataDTO;
 
-class BinanceExchangeInfoGettingService
+class BinanceCommonDataGettingService
 {
     private const API_METHOD = 'GET';
     private const ENDPOINT = '/v3/exchangeInfo';
@@ -30,12 +30,12 @@ class BinanceExchangeInfoGettingService
     }
 
     /**
-     * @return BinanceMarketInfoDTO
+     * @return BinanceCommonDataDTO
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function getExchangeInfo(): BinanceMarketInfoDTO
+    public function getCommonData(): BinanceCommonDataDTO
     {
         $response = $this->binanceClient->sendRequest(self::API_METHOD, self::ENDPOINT);
         $rateLimitInfoList = $response['rateLimits'];
@@ -61,9 +61,9 @@ class BinanceExchangeInfoGettingService
             $firstAsset = $symbolInfo['baseAsset'];
             $secondAsset = $symbolInfo['quoteAsset'];
 
-            $formattedSymbolInfoList[$symbol] = ['firstAsset' => $firstAsset, 'secondAsset' => $secondAsset];
+            $formattedSymbolInfoList[$symbol] = ['fromAsset' => $firstAsset, 'toAsset' => $secondAsset];
         }
 
-        return new BinanceMarketInfoDTO($requestWeightLimit, $formattedSymbolInfoList);
+        return new BinanceCommonDataDTO($requestWeightLimit, $formattedSymbolInfoList);
     }
 }
