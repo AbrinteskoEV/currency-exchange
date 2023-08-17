@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Application\Service\Market\Binance;
 
+use Application\Service\Market\MarketInfoRefreshingInterface;
 use Infrastructure\Service\Market\Binance\BinanceCommonDataRefreshingService;
 use Infrastructure\Service\Market\Binance\BinanceExchangePairsInfoGettingService;
 use Infrastructure\Service\Market\Binance\Cache\BinancePairsInfoCachingService;
 
-class BinanceAssetPriceListRefreshingService
+class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterface
 {
     private BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService;
     private BinancePairsInfoCachingService $binancePairsInfoCachingService;

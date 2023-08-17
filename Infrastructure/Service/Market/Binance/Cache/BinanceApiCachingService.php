@@ -72,11 +72,11 @@ class BinanceApiCachingService
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function getUsedWeight(): ?int
+    public function getUsedWeight(): int
     {
         $currencyDescriptionList = $this->cacheRepository->retrieve($this->getUsedWeightComplexKey());
 
-        return $currencyDescriptionList ?? null;
+        return $currencyDescriptionList ?? 0;
     }
 
     /**

@@ -6,14 +6,14 @@ namespace Application\Http\Controllers;
 
 use Application\Exceptions\ApplicationException;
 use Application\Http\Request\Market\AssetPriceGettingRequest;
-use Application\Service\Market\Binance\BinanceAssetPriceListRefreshingService;
+use Application\Service\Market\Binance\BinanceMarketInfoRefreshingService;
 use Infrastructure\Service\Market\Binance\Cache\BinancePairsInfoCachingService;
 
 class MarketController
 {
     /**
      * @param AssetPriceGettingRequest $request
-     * @param BinanceAssetPriceListRefreshingService $binanceAssetPriceListRefreshingService
+     * @param BinanceMarketInfoRefreshingService $binanceAssetPriceListRefreshingService
      * @param BinancePairsInfoCachingService $binancePairsInfoCachingService
      *
      * @return array
@@ -24,7 +24,7 @@ class MarketController
      */
     public function getExchangePairsInfo(
         AssetPriceGettingRequest $request,
-        BinanceAssetPriceListRefreshingService $binanceAssetPriceListRefreshingService,
+        BinanceMarketInfoRefreshingService $binanceAssetPriceListRefreshingService,
         BinancePairsInfoCachingService $binancePairsInfoCachingService
     ): array {
         $priceInfo = $binancePairsInfoCachingService->getPriceInfo();
