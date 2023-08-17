@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace Infrastructure\Service\Market\Binance;
 
-use Infrastructure\Service\Market\Binance\Cache\BinanceApiCachingService;
-use Infrastructure\Service\Market\Binance\Cache\BinancePairsInfoCachingService;
+use Infrastructure\Service\Market\Binance\Cache\BinanceCommonDataCachingService;
 
 class BinanceCommonDataRefreshingService
 {
     private BinanceCommonDataGettingService $binanceExchangeInfoGettingService;
-    private BinanceApiCachingService $binanceApiCachingService;
-    private BinancePairsInfoCachingService $binancePairsInfoCachingService;
+    private BinanceCommonDataCachingService $binanceApiCachingService;
 
     /**
      * @param BinanceCommonDataGettingService $binanceExchangeInfoGettingService
-     * @param BinanceApiCachingService $binanceApiCachingService
-     * @param BinancePairsInfoCachingService $binancePairsInfoCachingService
+     * @param BinanceCommonDataCachingService $binanceApiCachingService
      */
     public function __construct(
         BinanceCommonDataGettingService $binanceExchangeInfoGettingService,
-        BinanceApiCachingService $binanceApiCachingService,
-        BinancePairsInfoCachingService $binancePairsInfoCachingService
+        BinanceCommonDataCachingService $binanceApiCachingService,
     ) {
         $this->binanceExchangeInfoGettingService = $binanceExchangeInfoGettingService;
         $this->binanceApiCachingService = $binanceApiCachingService;
-        $this->binancePairsInfoCachingService = $binancePairsInfoCachingService;
     }
 
     /**
@@ -38,6 +33,6 @@ class BinanceCommonDataRefreshingService
     {
         $binanceCommonDataDTO = $this->binanceExchangeInfoGettingService->getCommonData();
         $this->binanceApiCachingService->storeAvailableWeight($binanceCommonDataDTO->getMinuteApiWeightLimit());
-        $this->binancePairsInfoCachingService->storeSymbolsInfo($binanceCommonDataDTO->getSymbolInfoList());
+        $this->binanceApiCachingService->storeSymbolsInfo($binanceCommonDataDTO->getSymbolInfoList());
     }
 }

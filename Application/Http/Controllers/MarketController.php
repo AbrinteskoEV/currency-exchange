@@ -6,36 +6,31 @@ namespace Application\Http\Controllers;
 
 use Application\Exceptions\ApplicationException;
 use Application\Http\Request\Market\AssetPriceGettingRequest;
-use Application\Service\Market\Binance\BinanceMarketInfoRefreshingService;
-use Infrastructure\Service\Market\Binance\Cache\BinancePairsInfoCachingService;
+use Application\Service\Market\PairsPriceGettingService;
 
 class MarketController
 {
     /**
      * @param AssetPriceGettingRequest $request
-     * @param BinanceMarketInfoRefreshingService $binanceAssetPriceListRefreshingService
-     * @param BinancePairsInfoCachingService $binancePairsInfoCachingService
+     * @param PairsPriceGettingService $pairsPriceGettingService
      *
      * @return array
      *
      * @throws ApplicationException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \JsonException
+     * @throws \Application\Exceptions\BaseException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
      */
     public function getExchangePairsInfo(
         AssetPriceGettingRequest $request,
-        BinanceMarketInfoRefreshingService $binanceAssetPriceListRefreshingService,
-        BinancePairsInfoCachingService $binancePairsInfoCachingService
+        PairsPriceGettingService $pairsPriceGettingService
     ): array {
-        $priceInfo = $binancePairsInfoCachingService->getPriceInfo();
+        $priceInfo = $pairsPriceGettingService->getPairPrice($request->getFromAsset(), $request->getToAsset());
 
-        $priceInfo = $priceInfo[$request->getFromAsset()] ?? null;
-        $assetPrice = $priceInfo[$request->getToAsset()] ?? null;
-
-        if (!$assetPrice) {
+        if (!$priceInfo) {
             throw new ApplicationException('Asset pair not found');
         }
 
-        return ['price' => $assetPrice];
+        return $priceInfo;
     }
 }

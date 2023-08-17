@@ -13,7 +13,4 @@ class CacheKeyNamespaceDictionary
     public const EXCHANGE_PAIRS = 'PAIR';
     public const PAIRS_PRICE = 'PRC';
     public const PAIRS_INFO = 'INFO';
-
-    public const DAILY = '1D';
-    public const THIRTY_SECONDS = '30S';
 }

@@ -4,29 +4,35 @@ declare(strict_types=1);
 
 namespace Application\Service\Market\Binance;
 
+use Application\Service\Market\Cache\BinancePairsPriceCachingServiceFactory;
+use Application\Service\Market\Cache\PairsPriceCachingService;
 use Application\Service\Market\MarketInfoRefreshingInterface;
 use Infrastructure\Service\Market\Binance\BinanceCommonDataRefreshingService;
 use Infrastructure\Service\Market\Binance\BinanceExchangePairsInfoGettingService;
-use Infrastructure\Service\Market\Binance\Cache\BinancePairsInfoCachingService;
+use Infrastructure\Service\Market\Binance\Cache\BinanceCommonDataCachingService;
 
 class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterface
 {
     private BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService;
-    private BinancePairsInfoCachingService $binancePairsInfoCachingService;
+    private PairsPriceCachingService $binancePairsInfoCachingService;
+    private BinanceCommonDataCachingService $binanceCommonDataCachingService;
     private BinanceCommonDataRefreshingService $binanceCommonDataRefreshingService;
 
     /**
      * @param BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService
-     * @param BinancePairsInfoCachingService $binancePairsInfoCachingService
+     * @param BinancePairsPriceCachingServiceFactory $binancePairsPriceCachingServiceFactory
+     * @param BinanceCommonDataCachingService $binanceCommonDataCachingService
      * @param BinanceCommonDataRefreshingService $binanceCommonDataRefreshingService
      */
     public function __construct(
         BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService,
-        BinancePairsInfoCachingService $binancePairsInfoCachingService,
+        BinancePairsPriceCachingServiceFactory $binancePairsPriceCachingServiceFactory,
+        BinanceCommonDataCachingService $binanceCommonDataCachingService,
         BinanceCommonDataRefreshingService $binanceCommonDataRefreshingService
     ) {
         $this->binanceExchangePairsInfoGettingService = $binanceExchangePairsInfoGettingService;
-        $this->binancePairsInfoCachingService = $binancePairsInfoCachingService;
+        $this->binancePairsInfoCachingService = $binancePairsPriceCachingServiceFactory->create();
+        $this->binanceCommonDataCachingService = $binanceCommonDataCachingService;
         $this->binanceCommonDataRefreshingService = $binanceCommonDataRefreshingService;
     }
 
@@ -38,11 +44,11 @@ class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterfac
      */
     public function refreshAssetPriceList(): void
     {
-        $binaceSymbolsInfoList = $this->binancePairsInfoCachingService->getSymbolsInfo();
+        $binanceSymbolsInfoList = $this->binanceCommonDataCachingService->getSymbolsInfo();
 
-        if ($binaceSymbolsInfoList === null) {
+        if ($binanceSymbolsInfoList === null) {
             $this->binanceCommonDataRefreshingService->refreshCommonData();
-            $binaceSymbolsInfoList = $this->binancePairsInfoCachingService->getSymbolsInfo();
+            $binanceSymbolsInfoList = $this->binanceCommonDataCachingService->getSymbolsInfo();
         }
 
         $binanceExchangePairsInfoList = $this->binanceExchangePairsInfoGettingService->getExchangePairsInfo();
@@ -52,7 +58,7 @@ class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterfac
         foreach ($binanceExchangePairsInfoList as $pairInfo) {
             $symbol = $pairInfo['symbol'];
             $price = $pairInfo['price'];
-            $assetCodes = $binaceSymbolsInfoList[$symbol] ?? null;
+            $assetCodes = $binanceSymbolsInfoList[$symbol] ?? null;
 
             if (!$assetCodes) {
                 continue;

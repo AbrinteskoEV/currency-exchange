@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Infrastructure\Service\Market\Binance\Cache;
 
-
 use Domain\Dictionary\Cache\CacheKeyNamespaceDictionary;
 use Infrastructure\Service\Cache\TarantoolCacheRepository;
 
-class BinanceApiCachingService
+class BinanceCommonDataCachingService
 {
     private TarantoolCacheRepository $cacheRepository;
-    private string $binanceApiNamespace;
+    private string $binanceNamespace;
 
     /**
      * @param TarantoolCacheRepository $cacheRepository
@@ -19,11 +18,7 @@ class BinanceApiCachingService
     public function __construct(TarantoolCacheRepository $cacheRepository)
     {
         $this->cacheRepository = $cacheRepository;
-        $this->binanceApiNamespace = $this->cacheRepository->formatComplexKey([
-            CacheKeyNamespaceDictionary::DAILY,
-            CacheKeyNamespaceDictionary::BINANCE,
-            CacheKeyNamespaceDictionary::API_WEIGHT,
-        ]);
+        $this->binanceNamespace = CacheKeyNamespaceDictionary::BINANCE;
     }
 
     /**
@@ -107,13 +102,54 @@ class BinanceApiCachingService
     }
 
     /**
+     * @return array|null
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \JsonException
+     */
+    public function getSymbolsInfo(): ?array
+    {
+        $currencyDescriptionList = $this->cacheRepository->retrieve($this->getSymbolsInfoComplexKey());
+
+        return $currencyDescriptionList ?? null;
+    }
+
+    /**
+     * @param array $symbolsInfo
+     *
+     * @return bool
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \JsonException
+     */
+    public function storeSymbolsInfo(array $symbolsInfo): bool
+    {
+        return (bool) $this->cacheRepository->store(
+            $this->getSymbolsInfoComplexKey(),
+            $symbolsInfo
+        );
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \JsonException
+     */
+    public function removeSymbolsInfo(): bool
+    {
+        return $this->cacheRepository->remove($this->getSymbolsInfoComplexKey());
+    }
+
+    /**
      * @return string
      */
     private function getAvailableWeightComplexKey(): string
     {
         return $this->cacheRepository->formatComplexKey([
-            CacheKeyNamespaceDictionary::AVAILABLE_WEIGHT
-        ], $this->binanceApiNamespace);
+            CacheKeyNamespaceDictionary::API_WEIGHT,
+            CacheKeyNamespaceDictionary::AVAILABLE_WEIGHT,
+        ], $this->binanceNamespace);
     }
 
     /**
@@ -122,7 +158,19 @@ class BinanceApiCachingService
     private function getUsedWeightComplexKey(): string
     {
         return $this->cacheRepository->formatComplexKey([
-            CacheKeyNamespaceDictionary::USED_WEIGHT
-        ], $this->binanceApiNamespace);
+            CacheKeyNamespaceDictionary::API_WEIGHT,
+            CacheKeyNamespaceDictionary::USED_WEIGHT,
+        ], $this->binanceNamespace);
+    }
+
+    /**
+     * @return string
+     */
+    private function getSymbolsInfoComplexKey(): string
+    {
+        return $this->cacheRepository->formatComplexKey([
+            CacheKeyNamespaceDictionary::EXCHANGE_PAIRS,
+            CacheKeyNamespaceDictionary::PAIRS_INFO,
+        ], $this->binanceNamespace);
     }
 }
