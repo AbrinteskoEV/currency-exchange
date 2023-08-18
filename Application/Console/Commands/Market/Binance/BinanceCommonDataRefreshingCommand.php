@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Console\Commands;
+namespace Application\Console\Commands\Market\Binance;
 
 use Illuminate\Console\Command;
 use Infrastructure\Service\Market\Binance\BinanceCommonDataRefreshingService;

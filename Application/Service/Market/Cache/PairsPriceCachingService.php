@@ -45,7 +45,7 @@ class PairsPriceCachingService
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function storePriceInfo(array $priceInfo): bool
+    public function setPriceInfo(array $priceInfo): bool
     {
         return (bool) $this->cacheRepository->store(
             $this->getPriceInfoComplexKey(),

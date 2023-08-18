@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace Infrastructure\Service\Market\Binance;
 
+use Application\Exceptions\BaseException;
+use Domain\Dictionary\Market\Binance\BinanceRequestLabelDictionary;
 use http\Exception\RuntimeException;
-use Infrastructure\Client\BaseHttpClient;
+use Infrastructure\Client\BinanceHttpClient;
 use Infrastructure\Client\BinanceHttpClientFactory;
 use Infrastructure\Service\Market\Binance\DTO\BinanceCommonDataDTO;
+use Infrastructure\Service\Market\Binance\DTO\BinanceRequestDTO;
 
 class BinanceCommonDataGettingService
 {
     private const API_METHOD = 'GET';
     private const ENDPOINT = '/v3/exchangeInfo';
-    private const API_WEIGHT = 10;
 
     private const REQUEST_WEIGHT_LIMIT_TYPE = 'REQUEST_WEIGHT';
     private const MINUTE_INTERVAL = 'MINUTE';
 
-
-    private BaseHttpClient $binanceClient;
+    private BinanceHttpClient $binanceClient;
 
     /**
      * @param BinanceHttpClientFactory $binanceClientFactory
@@ -32,12 +33,19 @@ class BinanceCommonDataGettingService
     /**
      * @return BinanceCommonDataDTO
      *
+     * @throws BaseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
     public function getCommonData(): BinanceCommonDataDTO
     {
-        $response = $this->binanceClient->sendRequest(self::API_METHOD, self::ENDPOINT);
+        $requestDTO = new BinanceRequestDTO(
+            self::API_METHOD,
+            self::ENDPOINT,
+            BinanceRequestLabelDictionary::COMMON_DATA_GETTING_LABEL
+        );
+
+        $response = $this->binanceClient->sendRequest($requestDTO);
         $rateLimitInfoList = $response['rateLimits'];
 
         foreach ($rateLimitInfoList as $rateLimitInfo) {

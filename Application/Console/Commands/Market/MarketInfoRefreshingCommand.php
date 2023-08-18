@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Application\Console\Commands;
+namespace Application\Console\Commands\Market;
 
 use Application\Exceptions\BaseException;
 use Application\Service\Market\MarketInfoRefreshingService;

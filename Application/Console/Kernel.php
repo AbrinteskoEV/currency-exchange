@@ -2,8 +2,9 @@
 
 namespace Application\Console;
 
-use Application\Console\Commands\BinanceCommonDataRefreshingCommand;
-use Application\Console\Commands\MarketInfoRefreshingCommand;
+use Application\Console\Commands\Market\Binance\BinanceCommonDataRefreshingCommand;
+use Application\Console\Commands\Market\Binance\BinanceUsedApiWeightRefreshingCommand;
+use Application\Console\Commands\Market\MarketInfoRefreshingCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 
@@ -12,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         BinanceCommonDataRefreshingCommand::class,
         MarketInfoRefreshingCommand::class,
+        BinanceUsedApiWeightRefreshingCommand::class,
     ];
 
     /**
@@ -31,6 +33,12 @@ class Kernel extends ConsoleKernel
             ->runInBackground()
             ->everyMinute()
             ->name('refresh_market_info')
+            ->withoutOverlapping();
+
+        $schedule->command('refresh_binance_used_weight')
+            ->runInBackground()
+            ->everyMinute()
+            ->name('refresh_binance_used_weight')
             ->withoutOverlapping();
     }
 }

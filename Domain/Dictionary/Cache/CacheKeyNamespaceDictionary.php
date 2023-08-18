@@ -13,4 +13,6 @@ class CacheKeyNamespaceDictionary
     public const EXCHANGE_PAIRS = 'PAIR';
     public const PAIRS_PRICE = 'PRC';
     public const PAIRS_INFO = 'INFO';
+    public const API = 'API';
+    public const LAST_SEND = 'LAST_SEND';
 }

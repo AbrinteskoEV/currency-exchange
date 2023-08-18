@@ -4,23 +4,27 @@ declare(strict_types=1);
 
 namespace Infrastructure\Service\Market\Binance;
 
+use Infrastructure\Service\Market\Binance\Cache\BinanceApiDataCachingService;
 use Infrastructure\Service\Market\Binance\Cache\BinanceCommonDataCachingService;
 
 class BinanceCommonDataRefreshingService
 {
     private BinanceCommonDataGettingService $binanceExchangeInfoGettingService;
-    private BinanceCommonDataCachingService $binanceApiCachingService;
+    private BinanceCommonDataCachingService $binanceCommonDataCachingService;
 
     /**
      * @param BinanceCommonDataGettingService $binanceExchangeInfoGettingService
-     * @param BinanceCommonDataCachingService $binanceApiCachingService
+     * @param BinanceCommonDataCachingService $binanceCommonDataCachingService
+     * @param BinanceApiDataCachingService $binanceApiDataCachingService
      */
     public function __construct(
         BinanceCommonDataGettingService $binanceExchangeInfoGettingService,
-        BinanceCommonDataCachingService $binanceApiCachingService,
+        BinanceCommonDataCachingService $binanceCommonDataCachingService,
+        BinanceApiDataCachingService $binanceApiDataCachingService,
     ) {
         $this->binanceExchangeInfoGettingService = $binanceExchangeInfoGettingService;
-        $this->binanceApiCachingService = $binanceApiCachingService;
+        $this->binanceCommonDataCachingService = $binanceCommonDataCachingService;
+        $this->binanceApiDataCachingService = $binanceApiDataCachingService;
     }
 
     /**
@@ -32,7 +36,7 @@ class BinanceCommonDataRefreshingService
     public function refreshCommonData(): void
     {
         $binanceCommonDataDTO = $this->binanceExchangeInfoGettingService->getCommonData();
-        $this->binanceApiCachingService->storeAvailableWeight($binanceCommonDataDTO->getMinuteApiWeightLimit());
-        $this->binanceApiCachingService->storeSymbolsInfo($binanceCommonDataDTO->getSymbolInfoList());
+        $this->binanceApiDataCachingService->setAvailableWeight($binanceCommonDataDTO->getMinuteApiWeightLimit());
+        $this->binanceCommonDataCachingService->setSymbolsInfo($binanceCommonDataDTO->getSymbolInfoList());
     }
 }

@@ -8,24 +8,24 @@ use Application\Service\Market\Cache\BinancePairsPriceCachingServiceFactory;
 use Application\Service\Market\Cache\PairsPriceCachingService;
 use Application\Service\Market\MarketInfoRefreshingInterface;
 use Infrastructure\Service\Market\Binance\BinanceCommonDataRefreshingService;
-use Infrastructure\Service\Market\Binance\BinanceExchangePairsInfoGettingService;
+use Infrastructure\Service\Market\Binance\BinanceExchangePairsPriceGettingService;
 use Infrastructure\Service\Market\Binance\Cache\BinanceCommonDataCachingService;
 
 class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterface
 {
-    private BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService;
+    private BinanceExchangePairsPriceGettingService $binanceExchangePairsInfoGettingService;
     private PairsPriceCachingService $binancePairsInfoCachingService;
     private BinanceCommonDataCachingService $binanceCommonDataCachingService;
     private BinanceCommonDataRefreshingService $binanceCommonDataRefreshingService;
 
     /**
-     * @param BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService
+     * @param BinanceExchangePairsPriceGettingService $binanceExchangePairsInfoGettingService
      * @param BinancePairsPriceCachingServiceFactory $binancePairsPriceCachingServiceFactory
      * @param BinanceCommonDataCachingService $binanceCommonDataCachingService
      * @param BinanceCommonDataRefreshingService $binanceCommonDataRefreshingService
      */
     public function __construct(
-        BinanceExchangePairsInfoGettingService $binanceExchangePairsInfoGettingService,
+        BinanceExchangePairsPriceGettingService $binanceExchangePairsInfoGettingService,
         BinancePairsPriceCachingServiceFactory $binancePairsPriceCachingServiceFactory,
         BinanceCommonDataCachingService $binanceCommonDataCachingService,
         BinanceCommonDataRefreshingService $binanceCommonDataRefreshingService
@@ -51,7 +51,7 @@ class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterfac
             $binanceSymbolsInfoList = $this->binanceCommonDataCachingService->getSymbolsInfo();
         }
 
-        $binanceExchangePairsInfoList = $this->binanceExchangePairsInfoGettingService->getExchangePairsInfo();
+        $binanceExchangePairsInfoList = $this->binanceExchangePairsInfoGettingService->getExchangePairsPrice();
 
         $formattedPairsPriceList = [];
 
@@ -71,6 +71,6 @@ class BinanceMarketInfoRefreshingService implements MarketInfoRefreshingInterfac
             $formattedPairsPriceList[$toAsset][$fromAsset] = 1 / $price;
         }
 
-        $this->binancePairsInfoCachingService->storePriceInfo($formattedPairsPriceList);
+        $this->binancePairsInfoCachingService->setPriceInfo($formattedPairsPriceList);
     }
 }
