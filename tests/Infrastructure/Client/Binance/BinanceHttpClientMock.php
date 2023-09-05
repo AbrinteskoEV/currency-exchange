@@ -2,58 +2,60 @@
 
 declare(strict_types=1);
 
-namespace Infrastructure\Client;
+namespace Tests\Infrastructure\Client\Binance;
 
 use Application\Exceptions\BaseException;
 use Infrastructure\Service\Market\Binance\Cache\BinanceApiDataCachingService;
-use Infrastructure\Service\Market\Binance\DTO\BinanceRequestDTO;
 
-class BinanceHttpClient
+class BinanceHttpClientMock
 {
     private const LOCKED_AVAILABLE_WEIGHT_PERCENT = 10;
-    private const DEFAULT_AVAILABLE_WEIGHT = 1000;
+    private const DEFAULT_AVAILABLE_WEIGHT = 1200;
 
-    private BaseHttpClient $httpClient;
-    private BinanceApiDataCachingService $binanceApiDataCachingService;
-    private array $requestSettings;
+    public const LIGHT_REQUEST_LABEL = 'light_test_request';
+    public const MEDIUM_REQUEST_LABEL = 'medium_test_request';
+    public const HEAVY_REQUEST_LABEL = 'heavy_test_request';
+
+    private array $requestSettings = [
+        self::LIGHT_REQUEST_LABEL => [
+            'weight' => 10,
+            'minInterval' => 5,
+            'cacheKey' => 'light_test_request',
+        ],
+        self::MEDIUM_REQUEST_LABEL => [
+            'weight' => 2,
+            'minInterval' => 1,
+            'cacheKey' => 'medium_test_request',
+        ],
+        self::HEAVY_REQUEST_LABEL => [
+            'weight' => 99,
+            'minInterval' => 1,
+            'cacheKey' => 'heavy_test_request',
+        ],
+    ];
+
+    private BinanceApiDataCachingServiceMock $binanceApiDataCachingService;
 
     /**
-     * @param BaseHttpClient $httpClient
-     * @param BinanceApiDataCachingService $binanceApiDataCachingService
-     * @param array $requestSettings
+     * @param BinanceApiDataCachingServiceMock $binanceApiDataCachingService
      */
-    public function __construct(
-        BaseHttpClient $httpClient,
-        BinanceApiDataCachingService $binanceApiDataCachingService,
-        array $requestSettings
-    ) {
-        $this->httpClient = $httpClient;
+    public function __construct(BinanceApiDataCachingServiceMock $binanceApiDataCachingService) {
         $this->binanceApiDataCachingService = $binanceApiDataCachingService;
-        $this->requestSettings = $requestSettings;
     }
 
     /**
-     * @param BinanceRequestDTO $requestDTO
+     * @param string $requestLabel
      *
-     * @return array
+     * @return void
      *
      * @throws BaseException
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    public function sendRequest(BinanceRequestDTO $requestDTO): array
+    public function sendRequest(string $requestLabel): void
     {
-        $requestLabel =$requestDTO->getLabel();
         $this->handleBeforeSending($requestLabel);
-
-        $response =  $this->httpClient->sendRequest(
-            $requestDTO->getApiMethod(),
-            $requestDTO->getEndpoint(),
-            $requestDTO->getData());
-
         $this->handleAfterSending($requestLabel);
-
-        return $response;
     }
 
     /**
