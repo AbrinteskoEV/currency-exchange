@@ -6,7 +6,7 @@ namespace Application\Http\Request\Market;
 
 use Application\Http\Request\BaseRequest;
 
-class AssetPriceGettingRequest extends BaseRequest
+class ManyPairsPriceGettingRequest extends BaseRequest
 {
     /**
      * @return \string[][]
@@ -14,11 +14,15 @@ class AssetPriceGettingRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'fromAsset' => [
+            'pairList' => [
+                'array',
+                'required',
+            ],
+            'pairList.*.fromAsset' => [
                 'required',
                 'string',
             ],
-            'toAsset' => [
+            'pairList.*.toAsset' => [
                 'required',
                 'string'
             ]
@@ -26,18 +30,10 @@ class AssetPriceGettingRequest extends BaseRequest
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getFromAsset(): string
+    public function getPairList(): array
     {
-        return $this->get('fromAsset');
-    }
-
-    /**
-     * @return string
-     */
-    public function getToAsset(): string
-    {
-        return $this->get('toAsset');
+        return $this->get('pairList');
     }
 }

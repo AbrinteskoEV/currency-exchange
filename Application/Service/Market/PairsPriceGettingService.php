@@ -22,7 +22,8 @@ class PairsPriceGettingService
     }
 
     /**
-     * @param string $market
+     * @param string $fromAsset
+     * @param string $toAsset
      *
      * @return array
      *
@@ -30,30 +31,59 @@ class PairsPriceGettingService
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function getAllPairsByMarket(string $market): array
+    public function getMinPairPrice(string $fromAsset, string $toAsset): array
     {
-        $priceGettingService = match($market) {
-            MarketDictionary::BINANCE_MARKET => $this->container->get(BinancePairsPriceGettingService::class),
-            default =>  throw new BaseException("Not implemented market [$market]")
-        };
+        $pairPriceInfoList = $this->getPairPrice($fromAsset, $toAsset);
 
-        /** @var PairsPriceGettingInterface $priceGettingService */
-        return $priceGettingService->getPairsPriceList();
+        if (!$pairPriceInfoList) {
+            return [];
+        }
+
+        $firstPair = array_shift($pairPriceInfoList);
+        $minPrice = $firstPair['price'];
+        $result = $firstPair;
+
+        foreach ($pairPriceInfoList as $pairPriceInfo) {
+            $pairPrice = $pairPriceInfo['price'];
+
+            if ($pairPrice < $minPrice) {
+                $minPrice = $pairPrice;
+                $result = $pairPriceInfo;
+            }
+        }
+
+        return $result;
     }
 
     /**
+     * @param string $fromAsset
+     * @param string $toAsset
+     *
      * @return array
      *
      * @throws BaseException
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
      */
-    public function getAllPairs(): array
+    public function getMaxPairPrice(string $fromAsset, string $toAsset): array
     {
-        $result = [];
+        $pairPriceInfoList = $this->getPairPrice($fromAsset, $toAsset);
 
-        foreach (MarketDictionary::MARKET_LIST as $market) {
-            $result[$market] = $this->getAllPairsByMarket($market);
+        if (!$pairPriceInfoList) {
+            return [];
+        }
+
+        $firstPair = array_shift($pairPriceInfoList);
+        $maxPrice = $firstPair['price'];
+        $result = $firstPair;
+
+        foreach ($pairPriceInfoList as $pairPriceInfo) {
+            $pairPrice = $pairPriceInfo['price'];
+
+            if ($pairPrice > $maxPrice) {
+                $maxPrice = $pairPrice;
+                $result = $pairPriceInfo;
+            }
         }
 
         return $result;
@@ -77,10 +107,53 @@ class PairsPriceGettingService
             $price = $marketPairsPriceInfo[$fromAsset][$toAsset] ?? null;
 
             if ($price !== null) {
-                $result[$market] = $price;
+                $result[] = [
+                    'market' => $market,
+                    'price' => $price,
+                    'fromAsset' => $fromAsset,
+                    'toAsset' => $toAsset,
+                ];
             }
         }
 
         return $result;
+    }
+
+    /**
+     * @return array
+     *
+     * @throws BaseException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    public function getAllPairs(): array
+    {
+        $result = [];
+
+        foreach (MarketDictionary::MARKET_LIST as $market) {
+            $result[$market] = $this->getAllPairsByMarket($market);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $market
+     *
+     * @return array
+     *
+     * @throws BaseException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     */
+    public function getAllPairsByMarket(string $market): array
+    {
+        $priceGettingService = match($market) {
+            MarketDictionary::BINANCE_MARKET => $this->container->get(BinancePairsPriceGettingService::class),
+            default =>  throw new BaseException("Not implemented market [$market]")
+        };
+
+        /** @var PairsPriceGettingInterface $priceGettingService */
+        return $priceGettingService->getPairsPriceList();
     }
 }

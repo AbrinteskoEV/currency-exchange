@@ -16,7 +16,17 @@ $router->get('', function () use ($router) {
 $router->group(['middleware' => MainMiddleware::class], function () use ($router) {
     $router->group(['prefix' => 'v1'], function () use ($router) {
         $router->group(['prefix' => 'market'], function () use ($router) {
-            $router->get('pairs-info', MarketController::class . '@getExchangePairsInfo');
+            $router->group(['prefix' => 'price'], function () use ($router) {
+                $router->get('', MarketController::class . '@getPairPrice');
+                $router->get('min', MarketController::class . '@getMinPairPrice');
+                $router->get('max', MarketController::class . '@getMaxPairPrice');
+
+                $router->group(['prefix' => 'many'], function () use ($router) {
+                    $router->get('', MarketController::class . '@getManyPairPrice');
+                    $router->get('min', MarketController::class . '@getManyMinPairPrice');
+                    $router->get('max', MarketController::class . '@getManyMaxPairPrice');
+                });
+            });
         });
     });
 });
