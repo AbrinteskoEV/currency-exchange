@@ -32,9 +32,9 @@ class BinanceApiDataCachingService
      */
     public function getAvailableWeight(): ?int
     {
-        $currencyDescriptionList = $this->cacheRepository->retrieve($this->getAvailableWeightComplexKey());
+        $availableWeight = $this->cacheRepository->retrieve($this->getAvailableWeightComplexKey());
 
-        return $currencyDescriptionList ?? null;
+        return $availableWeight ?? null;
     }
 
     /**
@@ -72,9 +72,9 @@ class BinanceApiDataCachingService
      */
     public function getUsedWeight(): int
     {
-        $currencyDescriptionList = $this->cacheRepository->retrieve($this->getUsedWeightComplexKey());
+        $usedWeight = $this->cacheRepository->retrieve($this->getUsedWeightComplexKey());
 
-        return $currencyDescriptionList ?? 0;
+        return $usedWeight ?? 0;
     }
 
     /**
@@ -114,10 +114,10 @@ class BinanceApiDataCachingService
      */
     public function getLastRequestCallTimestamp(string $requestCacheKey): ?int
     {
-        $currencyDescriptionList = $this->cacheRepository
+        $lastRequestCallTimestamp = $this->cacheRepository
             ->retrieve($this->getLastRequestCallComlexKey($requestCacheKey));
 
-        return $currencyDescriptionList ?? null;
+        return $lastRequestCallTimestamp ?? null;
     }
 
     /**
@@ -153,7 +153,7 @@ class BinanceApiDataCachingService
     /**
      * @return string
      */
-    private function getAvailableWeightComplexKey(): string
+    protected function getAvailableWeightComplexKey(): string
     {
         return $this->cacheRepository->formatComplexKey([
             CacheKeyNamespaceDictionary::AVAILABLE_WEIGHT,
@@ -163,7 +163,7 @@ class BinanceApiDataCachingService
     /**
      * @return string
      */
-    private function getUsedWeightComplexKey(): string
+    protected function getUsedWeightComplexKey(): string
     {
         return $this->cacheRepository->formatComplexKey([
             CacheKeyNamespaceDictionary::USED_WEIGHT,
@@ -175,7 +175,7 @@ class BinanceApiDataCachingService
      *
      * @return string
      */
-    private function getLastRequestCallComlexKey(string $requestCacheKey): string
+    protected function getLastRequestCallComlexKey(string $requestCacheKey): string
     {
         return $this->cacheRepository->formatComplexKey([
             CacheKeyNamespaceDictionary::LAST_SEND,

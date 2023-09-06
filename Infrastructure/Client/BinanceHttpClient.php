@@ -10,8 +10,8 @@ use Infrastructure\Service\Market\Binance\DTO\BinanceRequestDTO;
 
 class BinanceHttpClient
 {
-    private const LOCKED_AVAILABLE_WEIGHT_PERCENT = 10;
-    private const DEFAULT_AVAILABLE_WEIGHT = 1000;
+    protected const LOCKED_AVAILABLE_WEIGHT_PERCENT = 10;
+    protected const DEFAULT_AVAILABLE_WEIGHT = 1000;
 
     private BaseHttpClient $httpClient;
     private BinanceApiDataCachingService $binanceApiDataCachingService;
@@ -65,7 +65,7 @@ class BinanceHttpClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    private function handleBeforeSending(string $requestLabel): void
+    protected function handleBeforeSending(string $requestLabel): void
     {
         $requestSettings = $this->requestSettings[$requestLabel] ?? null;
 
@@ -100,7 +100,7 @@ class BinanceHttpClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    private function handleRequestWeight(int $requestWeight): void
+    protected function handleRequestWeight(int $requestWeight): void
     {
         $usedWeight = $this->binanceApiDataCachingService->getUsedWeight();
         $availableWeight = $this->binanceApiDataCachingService->getAvailableWeight();
@@ -131,7 +131,7 @@ class BinanceHttpClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    private function handleRequestSendingInterval(string $requestCacheKey, int $requestMinInterval): void
+    protected function handleRequestSendingInterval(string $requestCacheKey, int $requestMinInterval): void
     {
         $lastSendingTimestamp = $this->binanceApiDataCachingService->getLastRequestCallTimestamp($requestCacheKey);
 
@@ -159,7 +159,7 @@ class BinanceHttpClient
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \JsonException
      */
-    private function handleAfterSending(string $requestLabel): void
+    protected function handleAfterSending(string $requestLabel): void
     {
         $requestSettings = $this->requestSettings[$requestLabel];
         $requestWeight = $requestSettings['weight'];
