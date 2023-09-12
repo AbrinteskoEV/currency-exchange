@@ -5,22 +5,56 @@ declare(strict_types=1);
 namespace Tests\Infrastructure\Client\Binance;
 
 use Application\Exceptions\BaseException;
+use Infrastructure\Client\BaseHttpClient;
+use Infrastructure\Client\BinanceHttpClient;
+use Infrastructure\Service\Cache\TarantoolCacheRepository;
+use Infrastructure\Service\Market\Binance\Cache\BinanceApiDataCachingService;
 use Infrastructure\Service\Market\Binance\DTO\BinanceRequestDTO;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 class BinanceApiProtectionTest extends TestCase
 {
-    private BinanceHttpClientMock $binanceHttpClientMock;
-    private BinanceApiDataCachingServiceMock $binanceApiDataCachingServiceMock;
+    private const TEST_CACHE_KEY = 'BINANCE:API:TEST';
+    public const LIGHT_REQUEST_LABEL = 'light_test_request';
+    public const MEDIUM_REQUEST_LABEL = 'medium_test_request';
+    public const HEAVY_REQUEST_LABEL = 'heavy_test_request';
+
+    public const TEST_REQUEST_LIST = [
+        self::LIGHT_REQUEST_LABEL,
+        self::MEDIUM_REQUEST_LABEL,
+        self::HEAVY_REQUEST_LABEL,
+    ];
+
+    public const TEST_REQUEST_SETTINGS = [
+        self::LIGHT_REQUEST_LABEL => [
+            'weight' => 10,
+            'minInterval' => 0,
+            'cacheKey' => 'light_test_request',
+        ],
+        self::MEDIUM_REQUEST_LABEL => [
+            'weight' => 50,
+            'minInterval' => 10,
+            'cacheKey' => 'medium_test_request',
+        ],
+        self::HEAVY_REQUEST_LABEL => [
+            'weight' => 999,
+            'minInterval' => 30,
+            'cacheKey' => 'heavy_test_request',
+        ],
+    ];
 
     private array $lightRequestSettings
-        = BinanceHttpClientMock::TEST_REQUEST_SETTINGS[BinanceHttpClientMock::LIGHT_REQUEST_LABEL];
+        = self::TEST_REQUEST_SETTINGS[self::LIGHT_REQUEST_LABEL];
     private array $mediumRequestSettings
-        = BinanceHttpClientMock::TEST_REQUEST_SETTINGS[BinanceHttpClientMock::MEDIUM_REQUEST_LABEL];
+        = self::TEST_REQUEST_SETTINGS[self::MEDIUM_REQUEST_LABEL];
 
     private BinanceRequestDTO $lightRequestDTO;
     private BinanceRequestDTO $mediumRequestDTO;
     private BinanceRequestDTO $heavyRequestDTO;
+
+    private BinanceHttpClient $binanceHttpClientMock;
+    private BinanceApiDataCachingService $binanceApiDataCachingServiceMock;
 
     /**
      * @return void
@@ -32,25 +66,48 @@ class BinanceApiProtectionTest extends TestCase
     {
         parent::setUp();
 
-        $this->binanceHttpClientMock = app()->make(BinanceHttpClientMock::class);
-        $this->binanceApiDataCachingServiceMock = app()->make(BinanceApiDataCachingServiceMock::class);
-        $this->binanceApiDataCachingServiceMock->cleanTestCache();
+        $binanceApiDataCachingServiceMock = $this->getMockBuilder(BinanceApiDataCachingService::class)
+            ->onlyMethods([])
+            ->setConstructorArgs([app()->make(TarantoolCacheRepository::class)])
+            ->getMock();
+        $reflection = new ReflectionClass(BinanceApiDataCachingService::class);
+        $reflectionProperty = $reflection->getProperty('binanceApiNamespace');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($binanceApiDataCachingServiceMock, self::TEST_CACHE_KEY);
+
+        $baseHttpClientDummy = $this->getMockBuilder(BaseHttpClient::class)
+            ->onlyMethods(['sendRequest'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $binanceHttpClientMock = $this->getMockBuilder(BinanceHttpClient::class)
+            ->onlyMethods([])
+            ->setConstructorArgs([
+                $baseHttpClientDummy,
+                $binanceApiDataCachingServiceMock,
+                self::TEST_REQUEST_SETTINGS
+            ])
+            ->getMock();
+
+        $this->binanceHttpClientMock = $binanceHttpClientMock;
+        $this->binanceApiDataCachingServiceMock = $binanceApiDataCachingServiceMock;
 
         $this->lightRequestDTO = new BinanceRequestDTO(
             'test',
             'test',
-            BinanceHttpClientMock::LIGHT_REQUEST_LABEL
+            self::LIGHT_REQUEST_LABEL
         );
         $this->mediumRequestDTO = new BinanceRequestDTO(
             'test',
             'test',
-            BinanceHttpClientMock::MEDIUM_REQUEST_LABEL
+            self::MEDIUM_REQUEST_LABEL
         );
         $this->heavyRequestDTO = new BinanceRequestDTO(
             'test',
             'test',
-            BinanceHttpClientMock::HEAVY_REQUEST_LABEL
+            self::HEAVY_REQUEST_LABEL
         );
+
+        $this->cleanTestCache();
     }
 
     /**
@@ -63,7 +120,23 @@ class BinanceApiProtectionTest extends TestCase
     {
         parent::tearDown();
 
-        $this->binanceApiDataCachingServiceMock->cleanTestCache();
+        $this->cleanTestCache();
+    }
+
+    /**
+     * @return void
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \JsonException
+     */
+    private function cleanTestCache(): void
+    {
+        $this->binanceApiDataCachingServiceMock->removeUsedWeight();
+        $this->binanceApiDataCachingServiceMock->removeAvailableWeight();
+
+        foreach (self::TEST_REQUEST_LIST as $requestLabel) {
+            $this->binanceApiDataCachingServiceMock->removeLastRequestCallTimestamp($requestLabel);
+        }
     }
 
     /**
@@ -78,7 +151,7 @@ class BinanceApiProtectionTest extends TestCase
         $firstResponse = $this->binanceHttpClientMock->sendRequest($this->lightRequestDTO);
         $secondResponse = $this->binanceHttpClientMock->sendRequest($this->mediumRequestDTO);
 
-        self::assertTrue($firstResponse && $secondResponse, 'Request sending test');
+        self::assertTrue($firstResponse === [] && $secondResponse === [], 'Request sending test');
     }
 
     /**
@@ -112,7 +185,7 @@ class BinanceApiProtectionTest extends TestCase
     {
         $this->binanceHttpClientMock->sendRequest($this->lightRequestDTO);
         $lastUsed = $this->binanceApiDataCachingServiceMock
-            ->getLastRequestCallTimestamp(BinanceHttpClientMock::LIGHT_REQUEST_LABEL);
+            ->getLastRequestCallTimestamp(self::LIGHT_REQUEST_LABEL);
 
         self::assertTrue((bool) $lastUsed, 'Request last used timestamp caching test');
     }
