@@ -75,10 +75,7 @@ class BinanceApiProtectionTest extends TestCase
         $reflectionProperty->setAccessible(true);
         $reflectionProperty->setValue($binanceApiDataCachingServiceMock, self::TEST_CACHE_KEY);
 
-        $baseHttpClientDummy = $this->getMockBuilder(BaseHttpClient::class)
-            ->onlyMethods(['sendRequest'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $baseHttpClientDummy = $this->createStub(BaseHttpClient::class);
         $binanceHttpClientMock = $this->getMockBuilder(BinanceHttpClient::class)
             ->onlyMethods([])
             ->setConstructorArgs([
